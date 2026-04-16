@@ -227,12 +227,6 @@ export default function GalleryPage() {
         </div>
       )}
 
-      <div className="mt-20 flex justify-center">
-        <button className="flex items-center gap-3 bg-primary text-on-primary px-10 py-4 rounded-full font-bold shadow-lg hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300">
-          <Plus className="w-5 h-5" />
-          Daha Fazla Yükle
-        </button>
-      </div>
 
       {/* Lightbox Modal */}
       {lightbox && (

@@ -10,6 +10,7 @@ export default function CatalogPage() {
   const [lightbox, setLightbox] = useState<CatalogItem | null>(null);
 
   const handleDelete = (code: string) => {
+    if (!confirm('Bu kıyafeti silmek istediğinize emin misiniz?')) return;
     setItems((prev) => prev.filter((item) => item.code !== code));
   };
 

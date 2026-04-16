@@ -494,56 +494,53 @@ export default function PhotoStudioPage() {
         )}
 
         {result?.imageUrl && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
-            <div className="relative aspect-[4/5] rounded-2xl sm:rounded-[2rem] overflow-hidden bg-surface-container-low shadow-2xl">
+          <div className="flex flex-col items-center gap-4 sm:gap-6">
+            <div className="relative aspect-[4/5] w-full max-w-md rounded-2xl sm:rounded-[2rem] overflow-hidden bg-surface-container-low shadow-2xl">
               <img
                 src={result.imageUrl}
                 alt="Generated Result"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-4 sm:bottom-8 inset-x-4 sm:inset-x-8 flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/40 backdrop-blur-xl border border-white/30 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-primary-container flex items-center justify-center">
-                    <Check className="text-primary w-4 sm:w-5 h-4 sm:h-5" />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      if (!result?.imageUrl) return;
-                      const gallery = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
-                      gallery.unshift({
-                        id: result.taskId,
-                        url: result.imageUrl,
-                        prompt: result.prompt,
-                        type: 'photo',
-                        createdAt: new Date().toISOString(),
-                      });
-                      localStorage.setItem('kidseria_gallery', JSON.stringify(gallery));
-                      alert('Görsel galeriye eklendi!');
-                    }}
-                    className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold flex items-center gap-1 sm:gap-2 hover:bg-green-700 transition-all"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span className="hidden sm:inline">Galeriye Ekle</span>
-                  </button>
-                  <a
-                    href={result.imageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-primary text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold flex items-center gap-1 sm:gap-2 hover:bg-primary-dim transition-all"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                    <span className="hidden sm:inline">Görseli Aç</span>
-                  </a>
-                  <button
-                    onClick={() => setResult(null)}
-                    className="bg-white/50 text-error p-2 rounded-lg sm:rounded-xl hover:bg-error-container/20 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              <div className="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center">
+                <Check className="text-primary w-5 h-5" />
               </div>
+              <button
+                onClick={() => {
+                  if (!result?.imageUrl) return;
+                  const gallery = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
+                  gallery.unshift({
+                    id: result.taskId,
+                    url: result.imageUrl,
+                    prompt: result.prompt,
+                    type: 'photo',
+                    createdAt: new Date().toISOString(),
+                  });
+                  localStorage.setItem('kidseria_gallery', JSON.stringify(gallery));
+                  alert('Görsel galeriye eklendi!');
+                }}
+                className="bg-green-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                Galeriye Ekle
+              </button>
+              <a
+                href={result.imageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary-dim transition-all"
+              >
+                <ImageIcon className="w-4 h-4" />
+                Görseli Aç
+              </a>
+              <button
+                onClick={() => setResult(null)}
+                className="bg-error-container/20 text-error px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-error-container/40 transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+                Sil
+              </button>
             </div>
           </div>
         )}
