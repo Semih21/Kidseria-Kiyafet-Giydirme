@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Search, Play, Download, Image as ImageIcon, Trash2, Lightbulb, Wand2, Shirt, Baby, Film, Check, ZoomIn, X, Clock, MessageSquare, Loader2, Sparkles } from 'lucide-react';
+import { Search, Play, Download, Image as ImageIcon, Trash2, Lightbulb, Wand2, Shirt, Baby, Film, Check, ZoomIn, X, Clock, MessageSquare, Loader2, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { catalogItems, type CatalogItem } from '@/lib/catalog';
 
 const ageGroups = ['3-6 Ay', '6-12 Ay', '12-18 Ay', '18+ Ay'];
@@ -111,6 +111,7 @@ export default function VideoStudioPage() {
   const [selectedSkin, setSelectedSkin] = useState('#FCE2C4');
   const [selectedScenario, setSelectedScenario] = useState('home');
   const [duration, setDuration] = useState(5);
+  const [sound, setSound] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [lightbox, setLightbox] = useState<CatalogItem | null>(null);
 
@@ -223,7 +224,7 @@ export default function VideoStudioPage() {
           duration: String(duration),
           aspect_ratio: '9:16',
           mode: 'pro',
-          sound: false,
+          sound: sound,
         }),
       });
 
@@ -429,7 +430,26 @@ export default function VideoStudioPage() {
             </div>
           </div>
 
-          {/* 5. Prompt */}
+          {/* 5. Sound */}
+          <div className="bg-surface-container-low p-4 sm:p-8 rounded-2xl sm:rounded-3xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                {sound ? <Volume2 className="text-primary w-5 sm:w-6 h-5 sm:h-6" /> : <VolumeX className="text-on-surface-variant w-5 sm:w-6 h-5 sm:h-6" />}
+                Ses Efekti
+              </h3>
+              <button
+                onClick={() => setSound(!sound)}
+                className={`relative w-14 h-7 rounded-full transition-colors ${sound ? 'bg-primary' : 'bg-surface-container-highest'}`}
+              >
+                <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${sound ? 'translate-x-7' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            <p className="text-xs text-on-surface-variant mt-2">
+              {sound ? 'Video ses efektleri ile oluşturulacak' : 'Video sessiz oluşturulacak'}
+            </p>
+          </div>
+
+          {/* 6. Prompt */}
           <div className="bg-surface-container-low p-4 sm:p-8 rounded-2xl sm:rounded-3xl">
             <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2 mb-4 sm:mb-6">
               <MessageSquare className="text-primary w-5 sm:w-6 h-5 sm:h-6" />
@@ -505,6 +525,14 @@ export default function VideoStudioPage() {
                     autoPlay
                     className="w-full h-full object-contain"
                   />
+                  {/* Logo - sağ üst */}
+                  <div className="absolute top-4 right-4 sm:top-6 sm:right-6 pointer-events-none">
+                    <img
+                      src="/kidseria-logo-Photoroom.png"
+                      alt="Kidseria"
+                      className="h-10 sm:h-14 w-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+                    />
+                  </div>
                 </div>
               )}
 
