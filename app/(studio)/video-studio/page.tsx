@@ -536,7 +536,7 @@ export default function VideoStudioPage() {
                         gallery.unshift({
                           id: result.taskId,
                           url: result.videoUrl,
-                          prompt: result.prompt,
+                          prompt: result.promptTr || result.prompt,
                           type: 'video',
                           createdAt: new Date().toISOString(),
                         });

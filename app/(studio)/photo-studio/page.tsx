@@ -584,7 +584,7 @@ export default function PhotoStudioPage() {
                   gallery.unshift({
                     id: result.taskId,
                     url: result.imageUrl,
-                    prompt: result.prompt,
+                    prompt: result.promptTr || result.prompt,
                     type: 'photo',
                     createdAt: new Date().toISOString(),
                   });
