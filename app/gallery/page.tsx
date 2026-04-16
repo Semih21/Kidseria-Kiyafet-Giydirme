@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown, Image as ImageIcon, Download, Share2, Trash2, Play, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, Image as ImageIcon, Download, Share2, Trash2, Play, Plus, X, ZoomIn } from 'lucide-react';
 
 type GalleryItem = {
   id: string;
@@ -10,14 +10,7 @@ type GalleryItem = {
   image: string;
 };
 
-const allItems: GalleryItem[] = [
-  { id: '1', title: 'Bej Triko Kazak', type: 'photo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD1PxUVqNh-UpVzyzp29WswGFWoGvAYxqrzUV3DMpq5KOA2Q_rR-1uptInvIKW3MFjD3xvNcPzd9-Yk0srmNa9jnJh-a6ANMPlActq7PzpFOaTPI5202zepM3gmZ8T3w3rK1QZzUL8MgycvM9Dikpxl0PKKqEWIW09T2zKlmEgt94GhfbZ41IwtpGvBiH-orcgAUkO-ssxZBjvAYXQG0_u9agaca-57T0Ms-wrlgwy71uhA-7z7WXQXp-r7udB3if0tRR3Gi9e7O3I' },
-  { id: '2', title: 'Keten Koleksiyonu', type: 'video', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCsRqkS9wZ1fOTT7Cx-34vVN8BF60QiqWzUz3HAyrDtD06hew4u9YXaTOFDFB6z7if85t14I1O2GhENrjQySIq3TS5VZeU8i49Lp02PELER5B4aSEKh1O3G9v0eGKakrjY952w_tKuu4hlDSldJhG4pp8XpMa6QIrEz12DcRlaXGe2nSboJR1GLCibsInBy-BV4TUwFfyCVdgNLbn8W_im7j-DczshESOiCSycTpFeASbIBPVpIDFQjT6m--ux-CeEyp9aob2sjrtY' },
-  { id: '3', title: 'Kışlık Parka Tasarımı', type: 'photo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBf2y7AiU7awHpippka9IyjfpfS5OAbB0kN6p3JCImKywa2F6F0_St1Z0oHbGZqGWQQsStxHSWTUnfx-IdBVPVrzX8kZe3rZ35ZIXssMcYZMBIHT11WKpP1rEiR5ybax3SbvJkblUD6vvCHhkFj1UVraTKdjX3ycsBLgBPpR6XZGmCGXO0ZayGDPi6x8AsyUa-8xA1o7Odm3uAzPVi1HEuSt4q9NDDxRuzuHiFUqaSSNm6_ko2vHQBPSosYPkGhWpoUVi960BdmCqg' },
-  { id: '4', title: 'Organik Pamuk Tulum', type: 'photo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCmNpNk5LjbNcaLDmarBK0VHsRlLGBrtTILP_TjnKfccTlo_52RvyLikXAujl-QEC99KPwpnrPGAoxWljiRdhsfUFej3f7n_sJNaMait0AwdHIivwzusdmGCkUti_iJR8GVCBeRVHVcq4DDYNb3CGZqgaIz5W6TqlH05Eq27Hg8Nbjfzz0BGQNn9fXkJo8o4xnprFB73JJ0KhQjFR6-82w5IIk8te7cVnO8Lf_q7o9qwVwaK38AfJdBiHIvdKs14HMLiF2ZBWJSaR0' },
-  { id: '5', title: 'Yazlık Elbise Tanıtımı', type: 'video', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCFSlAFmY0qtOy3lAVJ7wneYf8wxyUiltOhsI2NOFEG3fMKKaXBr9NiF7m0L1AF6ocHDrVHD_UxjiGuTI0aXRDTU5JiGBOE9vccadYRmhFydCIJlUwiEuNlSI9UHfY3wG3ekzQspvyZIJpotqhg64LIemiRZZdWfHw54PyxUwG-2uXCgbcxma-S5hSjxXfPAgbIpUYqyl7YhkOy0q6P8kmd7LkJVfoCJDgRTsLa_IO72YQfEYa-RYc7qVCcF7-dT-MfwJbNA0QwU3M' },
-  { id: '6', title: 'Denim Ceket Konsepti', type: 'photo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA3kJW50xVGW33KcVDqL4olJWjqdTX16-CGHiYh5r5LOAj5C2-Y6gqhHs0NpJySUokAchr_iIYBAa_JYDOGzmC0BN5PVOfhvVkRRGXWDzQF4tteP3rcchCzxniG2Qz862u9NsmB-Dc_b__lxFBEbnI4_tWGEeK3zpvugvILPkDyL7uI5ZhRqbjqbuw2JeHlN93QNrKYpNl4JuTR6FNrpeDp4Flv1TytbnglRPsd10wOUK9M4vfaIt6Ww_coBKiZUPzD-j7B7I53U3U' },
-];
+const allItems: GalleryItem[] = [];
 
 type SortOption = 'newest' | 'oldest' | 'name';
 type FilterTab = 'all' | 'photo' | 'video';
@@ -27,6 +20,24 @@ export default function GalleryPage() {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [items, setItems] = useState(allItems);
+
+  // Load generated items from localStorage
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
+      if (stored.length > 0) {
+        const generated: GalleryItem[] = stored.map((g: { id: string; url: string; prompt: string; type: string; createdAt: string }) => ({
+          id: `gen-${g.id}`,
+          title: g.prompt?.slice(0, 40) + '...' || 'AI Görsel',
+          type: (g.type || 'photo') as 'photo' | 'video',
+          image: g.url,
+        }));
+        setItems(generated);
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
 
   const filteredItems = items.filter((item) => {
     if (activeTab === 'all') return true;
@@ -45,8 +56,56 @@ export default function GalleryPage() {
     name: 'İsme Göre',
   };
 
+  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
+
+  const handleDownload = async (item: GalleryItem) => {
+    try {
+      const res = await fetch(item.image);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kidseria-${item.id}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(item.image, '_blank');
+    }
+  };
+
+  const handleShare = async (item: GalleryItem) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.title,
+          text: 'Kidseria ile oluşturuldu',
+          url: item.image,
+        });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(item.image);
+      alert('Görsel bağlantısı panoya kopyalandı!');
+    }
+  };
+
   const handleDelete = (id: string) => {
+    if (!confirm('Bu görseli silmek istediğinize emin misiniz?')) return;
     setItems((prev) => prev.filter((item) => item.id !== id));
+    // Also remove from localStorage if it's a generated item
+    if (id.startsWith('gen-')) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
+        const taskId = id.replace('gen-', '');
+        const updated = stored.filter((g: { id: string }) => g.id !== taskId);
+        localStorage.setItem('kidseria_gallery', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+    }
   };
 
   return (
@@ -106,7 +165,7 @@ export default function GalleryPage() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
         {sortedItems.map((item) => (
           <div key={item.id} className="group relative flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-            <div className="aspect-[4/5] relative overflow-hidden">
+            <div className="aspect-[4/5] relative overflow-hidden cursor-pointer" onClick={() => setLightbox(item)}>
               <img
                 src={item.image}
                 alt={item.title}
@@ -119,14 +178,17 @@ export default function GalleryPage() {
                   </div>
                 </div>
               )}
-              <div className="absolute top-4 left-4 bg-surface-container-lowest/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-2">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-lg" />
+              </div>
+              <div className="absolute top-2 left-2 bg-surface-container-lowest/70 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1">
                 {item.type === 'photo' ? (
-                  <ImageIcon className="w-4 h-4 text-teal-600" />
+                  <ImageIcon className="w-3 h-3 text-teal-600" />
                 ) : (
-                  <Play className="w-4 h-4 text-teal-600" />
+                  <Play className="w-3 h-3 text-teal-600" />
                 )}
-                <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">
-                  {item.type === 'photo' ? 'Fotoğraf' : 'Video'}
+                <span className="text-[10px] font-medium text-teal-800">
+                  {item.type === 'photo' ? 'Foto' : 'Video'}
                 </span>
               </div>
             </div>
@@ -134,10 +196,16 @@ export default function GalleryPage() {
               <h3 className="text-sm sm:text-lg font-bold text-on-surface mb-1 sm:mb-2 truncate">{item.title}</h3>
               <div className="flex items-center justify-between mt-2 sm:mt-4 border-t border-outline-variant/10 pt-2 sm:pt-4">
                 <div className="flex gap-1 sm:gap-2">
-                  <button className="p-1.5 sm:p-2 rounded-full bg-secondary-container text-on-secondary-container hover:bg-primary hover:text-on-primary transition-colors">
+                  <button
+                    onClick={() => handleDownload(item)}
+                    className="p-1.5 sm:p-2 rounded-full bg-secondary-container text-on-secondary-container hover:bg-primary hover:text-on-primary transition-colors"
+                  >
                     <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
-                  <button className="p-1.5 sm:p-2 rounded-full bg-secondary-container text-on-secondary-container hover:bg-primary hover:text-on-primary transition-colors">
+                  <button
+                    onClick={() => handleShare(item)}
+                    className="p-1.5 sm:p-2 rounded-full bg-secondary-container text-on-secondary-container hover:bg-primary hover:text-on-primary transition-colors"
+                  >
                     <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
@@ -165,6 +233,54 @@ export default function GalleryPage() {
           Daha Fazla Yükle
         </button>
       </div>
+
+      {/* Lightbox Modal */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute -top-2 -right-2 z-10 bg-white/90 text-black p-2 rounded-full shadow-lg hover:bg-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src={lightbox.image}
+              alt={lightbox.title}
+              className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+            />
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={() => handleDownload(lightbox)}
+                className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                İndir
+              </button>
+              <button
+                onClick={() => handleShare(lightbox)}
+                className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                Paylaş
+              </button>
+              <button
+                onClick={() => { handleDelete(lightbox.id); setLightbox(null); }}
+                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="bg-slate-50 w-full py-8 sm:py-12 px-4 sm:px-12 mt-12 sm:mt-24 rounded-2xl sm:rounded-3xl">
         <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-[1440px] mx-auto justify-center">

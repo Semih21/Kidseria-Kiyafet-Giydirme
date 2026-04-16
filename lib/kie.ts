@@ -1,4 +1,5 @@
 export const KIE_BASE_URL = 'https://api.kie.ai';
+export const KIE_UPLOAD_BASE_URL = 'https://kieai.redpandaai.co';
 
 export function getKieApiKey(): string {
   const key = process.env.KIE_API_KEY;
@@ -20,4 +21,25 @@ export async function kieFetch(path: string, init: RequestInit = {}) {
   });
   const data = await res.json().catch(() => null);
   return { status: res.status, data };
+}
+
+/**
+ * Upload a file (as base64) to Kie.ai file storage.
+ * Returns the public file URL or null on failure.
+ */
+export async function kieUploadBase64(
+  base64Data: string,
+  fileName: string,
+  uploadPath = 'catalog',
+): Promise<string | null> {
+  const res = await fetch(`${KIE_UPLOAD_BASE_URL}/api/file-base64-upload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getKieApiKey()}`,
+    },
+    body: JSON.stringify({ base64Data, uploadPath, fileName }),
+  });
+  const data = await res.json().catch(() => null);
+  return data?.data?.downloadUrl ?? data?.data?.fileUrl ?? null;
 }

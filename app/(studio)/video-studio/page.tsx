@@ -1,27 +1,84 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Play, Download, Image as ImageIcon, Trash2, Lightbulb, Wand2, Shirt, Baby, Film, Check, ZoomIn, X, Clock, MessageSquare } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Search, Play, Download, Image as ImageIcon, Trash2, Lightbulb, Wand2, Shirt, Baby, Film, Check, ZoomIn, X, Clock, MessageSquare, Loader2, Sparkles } from 'lucide-react';
 import { catalogItems, type CatalogItem } from '@/lib/catalog';
 
-const ageGroups = ['3-6m', '6-12m', '12-18m', '18m+'];
-const skinTones = ['#FFE3D4', '#F3D1B5', '#D19B74', '#8D5524'];
+const ageGroups = ['3-6 Ay', '6-12 Ay', '12-18 Ay', '18+ Ay'];
+const skinTones = ['#FCE2C4', '#E5B087', '#AD7A52', '#8D5524'];
 const scenarios = [
-  { id: 'home', label: 'Ev Ortamı', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB4568FusI6wg_k--dMBpNyZAAxSf8g4W7NIx4EpobitFd7MpqLr2KeUZw35bo1b_rf47IBSbEciNFW4xA-xOGduWEclsojuQtbQkClKi8BfiIiTZ5EoNe2rlIR58lSK-uCQkSDzUp4CzHz1xk1lyi38CGMDEveH23Zs1cpCmg_U2yr5TxyF9carfoR3UbuMDcoVwy_MtafQopVyWEzjF4x0Nx2PE6YQ1u5ZEwGQxnU8eu7y7Q-a50-fnnH0BpC4O3tqQbdElIOQBs' },
-  { id: 'playground', label: 'Oyun Parkı', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEUFEwYxt2Zk1G7-XQ3pypxuLRxYMREFcNtuG8yJkV1bGNsAmsKE34naNP0Ku7jmmCtTz2sicVT6p81do5ShCAyNHXzfBqHuyZMkEOnaxYknitc_nJrkX4SuSrWO6nRg5zS9IJhIS-iFfPZw-escPSmuLqlGb7_6_AjHifpk_20Y5uY2Kr0OYYlcouqmSN6dDcqiGisRAAXeuZZFL-AWnX2ntqWqzLCx_doq48Y04RJa4fXOd90aFHDByvyEKtPV4OGTga6Sd-iwU' },
-  { id: 'beach', label: 'Plaj', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCjtcfUN0D6worVJElkFLXi6A1_6AQs5on2ltrqS0lQwNC3yUSjBFLKhSkftN8bnAHeyYmY-vzPjRR6tCo-3c3-KN3BduBa_wFfoF7fzsJEtDJFPPdFDuJBQLyUOTnHoaLa60Z4TITZfUsRqMm7BJrlHOppbsKDwoA0gIn9CevsGp-r4dgrm0QauidqVPHX1c_BVgHhg-kHVWxV66ldNfRvrDMdaiBRVa_A-nSgDaV_Y5owZMaGAen5V-8nMIsowvTSveBf3OC8rpQ' },
-  { id: 'birthday', label: 'Doğum Günü', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQD1iOSwfWKVOCKY0IjcVv7N-HdemE8kSY8PTyigtCS76e65JAh8rA3vxxgB1cizmMSOzRAXuZ3N7jew0CdwFlwVl3pObCtnAFYPxqdvoyuS9KBHFa_BzYJEinc_NKJrxWvbXcMrpaD4DY98_-9crK0awyK2H3Ex9BYVuzSDfIo_lAJd6QKE2r055RpeY9Jx114oNqozNp9oq9QpZFKaPZOq4xwZLGSdX7tDYE_T9CVbFtuXCWBTknFA6Ec2OD1Xb8eZiDPMoKp5E' },
+  { id: 'home', label: 'Ev Ortamı', image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&q=80' },
+  { id: 'playground', label: 'Oyun Parkı', image: 'https://images.pexels.com/photos/5623065/pexels-photo-5623065.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'beach', label: 'Sahil', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80' },
+  { id: 'birthday', label: 'Doğum Günü', image: 'https://images.pexels.com/photos/7180612/pexels-photo-7180612.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'park', label: 'Park', image: 'https://images.pexels.com/photos/8033865/pexels-photo-8033865.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'forest', label: 'Orman', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80' },
 ];
+
+const ageMap: Record<string, string> = {
+  '3-6 Ay': '3-6 month old baby',
+  '6-12 Ay': '6-12 month old baby',
+  '12-18 Ay': '12-18 month old toddler',
+  '18+ Ay': '18+ month old toddler',
+};
+
+const skinMap: Record<string, string> = {
+  '#FCE2C4': 'fair/light',
+  '#E5B087': 'medium/warm',
+  '#AD7A52': 'olive/tan',
+  '#8D5524': 'deep/dark',
+};
+
+const envMap: Record<string, string> = {
+  home: 'a cozy and warm children\'s room at home with toys and soft lighting',
+  playground: 'a colorful outdoor children\'s playground on a sunny day',
+  beach: 'a beautiful sunny tropical beach with sand, sea and blue sky',
+  birthday: 'a festive birthday party setting with colorful balloons and decorations',
+  park: 'a sunny green park with trees and grass, natural daylight',
+  forest: 'a magical sunlit green forest with trees and a path, fairy tale atmosphere',
+};
+
+function buildVideoPrompt(
+  clothingName: string,
+  age: string,
+  skin: string,
+  env: string,
+  userPrompt: string,
+): string {
+  const parts = [
+    `A cute ${ageMap[age] ?? age} with ${skinMap[skin] ?? 'light'} skin tone`,
+    `wearing "${clothingName}" children's clothing outfit`,
+    `in ${envMap[env] ?? 'a cozy home'}`,
+    'happy and playful, natural movement, cinematic quality, soft natural lighting, adorable child video',
+  ];
+
+  if (userPrompt.trim()) {
+    parts.push(userPrompt.trim());
+  }
+
+  return parts.join(', ') + '.';
+}
+
+type GenerationResult = {
+  taskId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  videoUrl?: string;
+  prompt: string;
+};
 
 export default function VideoStudioPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAge, setSelectedAge] = useState('6-12m');
-  const [selectedSkin, setSelectedSkin] = useState('#FFE3D4');
+  const [selectedAge, setSelectedAge] = useState('6-12 Ay');
+  const [selectedSkin, setSelectedSkin] = useState('#FCE2C4');
   const [selectedScenario, setSelectedScenario] = useState('home');
-  const [duration, setDuration] = useState(6);
+  const [duration, setDuration] = useState(5);
   const [prompt, setPrompt] = useState('');
   const [lightbox, setLightbox] = useState<CatalogItem | null>(null);
+
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<GenerationResult | null>(null);
 
   const filteredItems = searchQuery.trim()
     ? catalogItems.filter(
@@ -30,6 +87,123 @@ export default function VideoStudioPage() {
           item.code.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : catalogItems.slice(0, 4);
+
+  const selectedClothing = catalogItems.find((item) => item.code === selectedItem);
+
+  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string) => {
+    const maxAttempts = 120; // 10 minutes max (video takes longer)
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      try {
+        const res = await fetch(`/api/task-status?taskId=${encodeURIComponent(taskId)}`);
+        const data = await res.json();
+
+        console.log(`[Video Poll #${i + 1}] taskId=${taskId}`, JSON.stringify(data, null, 2));
+
+        const state = data?.data?.state;
+
+        if (state === 'success' || state === 'succeed' || state === 'completed') {
+          let resultData = null;
+          try {
+            resultData = data?.data?.resultJson ? JSON.parse(data.data.resultJson) : null;
+          } catch {
+            resultData = null;
+          }
+
+          const videoUrl =
+            resultData?.resultUrls?.[0] ??
+            resultData?.output?.video_url ??
+            resultData?.video_url ??
+            data?.data?.output?.video_url ??
+            null;
+
+          setResult({
+            taskId,
+            status: 'completed',
+            videoUrl: videoUrl ?? undefined,
+            prompt: builtPrompt,
+          });
+          setGenerating(false);
+          return;
+        }
+
+        if (state === 'fail' || state === 'failed') {
+          setError(`Video oluşturma başarısız oldu: ${data?.data?.failMsg ?? 'Bilinmeyen hata'}. Lütfen tekrar deneyin.`);
+          setGenerating(false);
+          return;
+        }
+
+        setResult((prev) =>
+          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt },
+        );
+      } catch {
+        // network error, keep polling
+      }
+    }
+
+    setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.');
+    setGenerating(false);
+  }, []);
+
+  const handleGenerate = async () => {
+    if (!selectedClothing) {
+      setError('Lütfen bir kıyafet seçin.');
+      return;
+    }
+
+    setError(null);
+    setResult(null);
+    setGenerating(true);
+
+    const builtPrompt = buildVideoPrompt(
+      selectedClothing.name,
+      selectedAge,
+      selectedSkin,
+      selectedScenario,
+      prompt,
+    );
+
+    const clothingImageUrl = selectedClothing.image;
+
+    try {
+      const res = await fetch('/api/generate-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: builtPrompt,
+          image_urls: [clothingImageUrl],
+          duration: String(duration),
+          aspect_ratio: '9:16',
+          mode: 'pro',
+          sound: false,
+        }),
+      });
+
+      const data = await res.json();
+
+      console.log('[Video Generate] Response:', JSON.stringify(data, null, 2));
+
+      if (!res.ok || data?.code !== 200) {
+        setError(data?.msg ?? data?.error ?? 'API hatası oluştu.');
+        setGenerating(false);
+        return;
+      }
+
+      const taskId = data?.data?.taskId;
+      if (!taskId) {
+        setError('Task ID alınamadı.');
+        setGenerating(false);
+        return;
+      }
+
+      setResult({ taskId, status: 'pending', prompt: builtPrompt });
+      pollTaskStatus(taskId, builtPrompt);
+    } catch {
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.');
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -155,7 +329,7 @@ export default function VideoStudioPage() {
               <Film className="text-primary w-5 sm:w-6 h-5 sm:h-6" />
               Senaryo Seçimi
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {scenarios.map((scenario) => (
                 <button
                   key={scenario.id}
@@ -198,16 +372,16 @@ export default function VideoStudioPage() {
               </div>
               <input
                 type="range"
-                min={3}
-                max={15}
-                step={1}
+                min={5}
+                max={10}
+                step={5}
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
                 className="w-full h-2 bg-surface-container-highest rounded-full appearance-none cursor-pointer accent-primary"
               />
               <div className="flex justify-between text-[10px] text-on-surface-variant font-medium">
-                <span>3s</span>
-                <span>15s</span>
+                <span>5s</span>
+                <span>10s</span>
               </div>
             </div>
           </div>
@@ -229,11 +403,30 @@ export default function VideoStudioPage() {
           </div>
 
           {/* 6. Generate Button */}
-          <button className="w-full h-16 sm:h-20 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-2xl sm:rounded-3xl font-headline text-lg sm:text-xl font-extrabold flex items-center justify-center gap-3 sm:gap-4 hover:scale-[1.01] active:scale-95 transition-all shadow-xl shadow-primary/20 group">
-            <Wand2 className="w-6 sm:w-8 h-6 sm:h-8 group-hover:rotate-12 transition-transform" />
-            VİDEOYU OLUŞTUR
-            <span className="text-xs sm:text-sm font-normal opacity-70">({duration} Saniye)</span>
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="w-full h-16 sm:h-20 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-2xl sm:rounded-3xl font-headline text-lg sm:text-xl font-extrabold flex items-center justify-center gap-3 sm:gap-4 hover:scale-[1.01] active:scale-95 transition-all shadow-xl shadow-primary/20 group disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="w-6 sm:w-8 h-6 sm:h-8 animate-spin" />
+                VIDEO OLUŞTURULUYOR...
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-6 sm:w-8 h-6 sm:h-8 group-hover:rotate-12 transition-transform" />
+                VİDEOYU OLUŞTUR
+                <span className="text-xs sm:text-sm font-normal opacity-70">({duration} Saniye)</span>
+              </>
+            )}
           </button>
+
+          {error && (
+            <div className="bg-error-container/20 border border-error/30 text-error rounded-2xl p-4 text-sm font-medium">
+              {error}
+            </div>
+          )}
         </section>
 
         {/* Results Area */}
@@ -245,51 +438,83 @@ export default function VideoStudioPage() {
                   <Play className="text-primary w-5 h-5" />
                   Önizleme
                 </h3>
-                <span className="text-[10px] font-bold text-primary-dim bg-primary-container px-2 py-1 rounded-full uppercase tracking-tighter">
-                  Yeni Oluşturuldu
-                </span>
+                {result?.status === 'completed' && (
+                  <span className="text-[10px] font-bold text-primary-dim bg-primary-container px-2 py-1 rounded-full uppercase tracking-tighter">
+                    Tamamlandı
+                  </span>
+                )}
               </div>
 
-              {/* Video Player Preview */}
-              <div className="aspect-[9/16] bg-black rounded-2xl sm:rounded-3xl relative overflow-hidden group">
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-                    <Play className="text-white w-8 sm:w-10 h-8 sm:h-10 fill-current" />
-                  </div>
+              {/* Video/Loading/Empty State */}
+              {generating && !result?.videoUrl && (
+                <div className="aspect-[9/16] bg-black rounded-2xl sm:rounded-3xl relative overflow-hidden flex flex-col items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-white animate-spin mb-4" />
+                  <p className="text-white/80 text-sm font-medium">Video oluşturuluyor...</p>
+                  <p className="text-white/50 text-xs mt-1">Bu birkaç dakika sürebilir</p>
                 </div>
-                <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7sUsdFkcLV828GWpbzt86ksxIItSkY8Wy_XcYLKh6EXRa7DqCouvhJhSgYwXXTGXtUWe9YwBc8IwqiNy7D6BYm4T_YkWfis0vRQpS815TUOuiPevaRzcNQ0cz_Cp3q_9Uw6uWofOnWyoCoF9hUTP73Uk9r7zPTLPPCx3g_UKtkO-RlMqYlbx5nuA5EF9mS18EQKO2gy5mp3MQXzvZA9SG4lR5d5zjuWP6W95sxORFNaw_CcaDusKLyhfbnJpI9XhH_Ik-wPWY-ec"
-                  alt="Video Preview"
-                  className="w-full h-full object-cover opacity-80"
-                />
-                <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-20">
-                  <div className="bg-white/10 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white/20">
-                    <div className="flex items-center justify-between text-white mb-2">
-                      <span className="text-xs font-bold">00:08</span>
-                      <span className="text-xs font-bold opacity-60">4K / 30fps</span>
-                    </div>
-                    <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-2/3"></div>
-                    </div>
-                  </div>
+              )}
+
+              {result?.videoUrl && (
+                <div className="aspect-[9/16] bg-black rounded-2xl sm:rounded-3xl relative overflow-hidden">
+                  <video
+                    src={result.videoUrl}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-              </div>
+              )}
+
+              {!generating && !result?.videoUrl && (
+                <div className="aspect-[9/16] bg-surface-container-low rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-on-surface-variant/50">
+                  <Film className="w-12 h-12 mb-3" />
+                  <p className="text-sm">Henüz bir video oluşturulmadı.</p>
+                  <p className="text-xs mt-1">Seçenekleri belirleyip butona tıklayın.</p>
+                </div>
+              )}
 
               {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
-                <button className="flex items-center justify-center gap-2 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-surface-container-high text-on-surface font-bold text-sm hover:bg-surface-container-highest transition-all group">
-                  <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
-                  İndir
-                </button>
-                <button className="flex items-center justify-center gap-2 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-primary text-on-primary font-bold text-sm hover:bg-primary-dim transition-all shadow-md shadow-primary/20">
-                  <ImageIcon className="w-5 h-5" />
-                  Galeriye Ekle
-                </button>
-              </div>
-              <button className="w-full mt-3 sm:mt-4 flex items-center justify-center gap-2 py-3 rounded-xl text-error font-bold text-xs uppercase tracking-widest hover:bg-error-container/10 transition-all">
-                <Trash2 className="w-4 h-4" />
-                Sonucu Sil
-              </button>
+              {result?.videoUrl && (
+                <>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+                    <a
+                      href={result.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-surface-container-high text-on-surface font-bold text-sm hover:bg-surface-container-highest transition-all group"
+                    >
+                      <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                      İndir
+                    </a>
+                    <button
+                      onClick={() => {
+                        if (!result?.videoUrl) return;
+                        const gallery = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
+                        gallery.unshift({
+                          id: result.taskId,
+                          url: result.videoUrl,
+                          prompt: result.prompt,
+                          type: 'video',
+                          createdAt: new Date().toISOString(),
+                        });
+                        localStorage.setItem('kidseria_gallery', JSON.stringify(gallery));
+                        alert('Video galeriye eklendi!');
+                      }}
+                      className="flex items-center justify-center gap-2 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-primary text-on-primary font-bold text-sm hover:bg-primary-dim transition-all shadow-md shadow-primary/20"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Galeriye Ekle
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setResult(null)}
+                    className="w-full mt-3 sm:mt-4 flex items-center justify-center gap-2 py-3 rounded-xl text-error font-bold text-xs uppercase tracking-widest hover:bg-error-container/10 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Sonucu Sil
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Info Card */}
@@ -299,7 +524,7 @@ export default function VideoStudioPage() {
                 İpucu
               </h4>
               <p className="text-sm opacity-80 leading-relaxed">
-                En iyi sonuçlar için yüksek çözünürlüklü ürün fotoğrafları kullanın. Video üretim süreci yaklaşık 45 saniye sürmektedir.
+                En iyi sonuçlar için yüksek çözünürlüklü ürün fotoğrafları kullanın. Video üretim süreci yaklaşık 1-3 dakika sürmektedir.
               </p>
             </div>
           </div>

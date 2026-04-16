@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { kieFetch } from '@/lib/kie';
+import { kieFetch, kieUploadBase64 } from '@/lib/kie';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 type KlingElement = {
   name: string;
@@ -25,6 +27,20 @@ type GenerateVideoBody = {
   callBackUrl?: string;
 };
 
+async function uploadLocalImage(localPath: string): Promise<string | null> {
+  const filePath = join(process.cwd(), 'public', localPath);
+  try {
+    const buffer = await readFile(filePath);
+    const ext = localPath.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+    const base64 = `data:${mime};base64,${buffer.toString('base64')}`;
+    const fileName = localPath.split('/').pop() ?? 'image.jpg';
+    return await kieUploadBase64(base64, fileName);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   let body: GenerateVideoBody;
   try {
@@ -48,6 +64,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Upload local images to Kie.ai and replace URLs
+  const uploadedUrls: string[] = [];
+  if (body.image_urls && body.image_urls.length > 0) {
+    for (const url of body.image_urls) {
+      if (url.startsWith('/')) {
+        const uploadedUrl = await uploadLocalImage(url);
+        if (uploadedUrl) {
+          uploadedUrls.push(uploadedUrl);
+        }
+      } else if (url.includes('localhost') || url.includes('127.0.0.1')) {
+        try {
+          const parsed = new URL(url);
+          const uploadedUrl = await uploadLocalImage(parsed.pathname);
+          if (uploadedUrl) {
+            uploadedUrls.push(uploadedUrl);
+          }
+        } catch {
+          // skip invalid URLs
+        }
+      } else {
+        uploadedUrls.push(url);
+      }
+    }
+  }
+
   const { status, data } = await kieFetch('/api/v1/jobs/createTask', {
     method: 'POST',
     body: JSON.stringify({
@@ -55,7 +96,7 @@ export async function POST(req: NextRequest) {
       callBackUrl: body.callBackUrl,
       input: {
         prompt: body.prompt ?? '',
-        image_urls: body.image_urls ?? [],
+        image_urls: uploadedUrls,
         sound: body.sound ?? (multiShots ? true : false),
         duration: body.duration ?? '5',
         aspect_ratio: body.aspect_ratio ?? '16:9',

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, Baby, Map, Check, Sparkles, Image as ImageIcon, Trash2, RectangleHorizontal, RectangleVertical, Monitor, ZoomIn, X, MessageSquare } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Search, Baby, Map, Check, Sparkles, Image as ImageIcon, Trash2, RectangleHorizontal, RectangleVertical, Monitor, ZoomIn, X, MessageSquare, Loader2 } from 'lucide-react';
 import { catalogItems, type CatalogItem } from '@/lib/catalog';
 
 const ageGroups = ['3-6 Ay', '6-12 Ay', '12-18 Ay', '18+ Ay'];
@@ -10,17 +10,74 @@ const ratios = [
   { id: '16:9', label: '16:9', icon: RectangleHorizontal, desc: 'Yatay' },
 ];
 const resolutions = [
-  { id: '1k', label: '1K', desc: '1024px' },
-  { id: '2k', label: '2K', desc: '2048px' },
-  { id: '4k', label: '4K', desc: '4096px' },
+  { id: '1K', label: '1K', desc: '1024px' },
+  { id: '2K', label: '2K', desc: '2048px' },
+  { id: '4K', label: '4K', desc: '4096px' },
 ];
 const skinTones = ['#FCE2C4', '#E5B087', '#AD7A52', '#8D5524'];
 const environments = [
-  { id: 'studio', label: 'Stüdyo', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHy17uTNk9P5GJkemQEPhrLTfIiGKrEa25iySS7RAPeKaQAj9DPfuzWBPGHe2qkW_51w4VK4rg7vV81x-uX5EWy-zJs83VjjOWJPOQNuhxHU-5J-ELBZj6F0zEqo_s8BziwrBdaT8NjsnIW3z51SyMpXhnjC6Vt3nhhRN6A6rUVTG-XQgDRXKziZ02ufTAOdpf1S5QtTOFWCf9KCOMF-3XQV7_hYFif0-mVQosKRqMmYCYKRaUbzFQPn27wufe0b0f66eBH1PLc7I' },
-  { id: 'home', label: 'Ev', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDTrqUahF1LDFk99LK_kQK17g5sZCqdjTINa2I7sMk-_hJh9-bjOJtjdGYMePj7wkuiuOpm2VoIkelcAHoqn42d4dGHFmStouBaLB16NZoyyQ2oAca7qVUwDs37xkCqfwB0MfjeDmSIDy_z8pN2xGlQBJrDqkzHs2atsftP8dnQVqb3xjauo6GDfAXFy19QZlBZDUoeoDqTN65Q3q2Pxl9BKGKo0ctWqfNtRKqFNBXadnF4bMky5ko5pmoGaTBq-jf1gzUwouoWhlY' },
-  { id: 'park', label: 'Park', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uUTaBMGHbyC7rUhkkOMFN8v8hcluTNGbJ3ypdOV4dpepnYuZXXlaVcJPf3yUtr16j357Gqu1MZyqKDfQwZO_v90VrtSmMNCq_1x-r9a_JsocrgKqkuhrIYCNBWzPaZa50OFDtxN-jtOU1wK84FdGbQKOLBShLFMdx_Nz6KiHiBADOs7VQNmX55X8EfehvtI6A6ZsV3902VKGgjG3TgZPPNcqUxGJm1Myui18qXyMAt8bRB29whlHOF2psdFtPat0sXSo8YLQ70c' },
-  { id: 'beach', label: 'Sahil', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA4sum7j9KpTllLzfgqBJx0bz_wcexqxb2C9r0-sWeL0CPZoyUk5-2g4QbJ6p1Y8AMgRHXmSu0orP9vUFNmnDhzFxRNzMXwqk5X9UTBvX_CI0gP_3c27i_-kzuq6L-ivXPDTPmdGDDwmOjzofKnQ8zwSGKhuc4tQNzWoA1m0oAaCbC7su0IwIwEj3l-TTatuFVMTmnLDhfhjG4QyTzyumvVG5TGVJsNDTn9_fQKJIEpAtcHsZcLBx-EvzdtWTdXBK7YvVflPuO_ht8' },
+  { id: 'studio', label: 'Stüdyo', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&q=80' },
+  { id: 'home', label: 'Ev', image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?w=600&q=80' },
+  { id: 'park', label: 'Park', image: 'https://images.pexels.com/photos/8033865/pexels-photo-8033865.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'beach', label: 'Sahil', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80' },
+  { id: 'garden', label: 'Bahçe', image: 'https://images.pexels.com/photos/570041/pexels-photo-570041.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'playground', label: 'Oyun Alanı', image: 'https://images.pexels.com/photos/5623065/pexels-photo-5623065.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'birthday', label: 'Doğum Günü', image: 'https://images.pexels.com/photos/7180612/pexels-photo-7180612.jpeg?auto=compress&cs=tinysrgb&w=600' },
+  { id: 'forest', label: 'Orman', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80' },
 ];
+
+const ageMap: Record<string, string> = {
+  '3-6 Ay': '3-6 month old baby',
+  '6-12 Ay': '6-12 month old baby',
+  '12-18 Ay': '12-18 month old toddler',
+  '18+ Ay': '18+ month old toddler',
+};
+
+const skinMap: Record<string, string> = {
+  '#FCE2C4': 'fair/light',
+  '#E5B087': 'medium/warm',
+  '#AD7A52': 'olive/tan',
+  '#8D5524': 'deep/dark',
+};
+
+const envMap: Record<string, string> = {
+  studio: 'a professional photo studio with soft pastel backdrop and professional lighting',
+  home: 'a cozy and warm children\'s room at home with toys and soft lighting',
+  park: 'a sunny green park with trees and grass, natural daylight',
+  beach: 'a beautiful sunny tropical beach with sand, sea and blue sky',
+  garden: 'a colorful flower garden in spring with bright natural light',
+  playground: 'a colorful outdoor children\'s playground on a sunny day',
+  birthday: 'a festive birthday party setting with colorful balloons and decorations',
+  forest: 'a magical sunlit green forest with trees and a path, fairy tale atmosphere',
+};
+
+function buildPrompt(
+  clothingName: string,
+  age: string,
+  skin: string,
+  env: string,
+  userPrompt: string,
+): string {
+  const parts = [
+    `A cute ${ageMap[age] ?? age} with ${skinMap[skin] ?? 'light'} skin tone`,
+    `wearing "${clothingName}" children's clothing outfit`,
+    `in ${envMap[env] ?? 'a photo studio'}`,
+    'high quality children\'s fashion photography, adorable happy pose, soft natural lighting, photorealistic, detailed clothing texture',
+  ];
+
+  if (userPrompt.trim()) {
+    parts.push(userPrompt.trim());
+  }
+
+  return parts.join(', ') + '.';
+}
+
+type GenerationResult = {
+  taskId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  imageUrl?: string;
+  prompt: string;
+};
 
 export default function PhotoStudioPage() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -29,9 +86,13 @@ export default function PhotoStudioPage() {
   const [selectedSkin, setSelectedSkin] = useState('#FCE2C4');
   const [selectedEnv, setSelectedEnv] = useState('studio');
   const [selectedRatio, setSelectedRatio] = useState('9:16');
-  const [selectedResolution, setSelectedResolution] = useState('2k');
+  const [selectedResolution, setSelectedResolution] = useState('2K');
   const [prompt, setPrompt] = useState('');
   const [lightbox, setLightbox] = useState<CatalogItem | null>(null);
+
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<GenerationResult | null>(null);
 
   const filteredItems = searchQuery.trim()
     ? catalogItems.filter(
@@ -40,6 +101,126 @@ export default function PhotoStudioPage() {
           item.code.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : catalogItems.slice(0, 4);
+
+  const selectedClothing = catalogItems.find((item) => item.code === selectedItem);
+
+  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string) => {
+    const maxAttempts = 60; // 5 minutes max
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+
+      try {
+        const res = await fetch(`/api/task-status?taskId=${encodeURIComponent(taskId)}`);
+        const data = await res.json();
+
+        console.log(`[Poll #${i + 1}] taskId=${taskId}`, JSON.stringify(data, null, 2));
+
+        const state = data?.data?.state;
+
+        if (state === 'success' || state === 'succeed' || state === 'completed') {
+          // Parse resultJson which contains the output
+          let resultData = null;
+          try {
+            resultData = data?.data?.resultJson ? JSON.parse(data.data.resultJson) : null;
+          } catch {
+            resultData = null;
+          }
+
+          const imageUrl =
+            resultData?.resultUrls?.[0] ??
+            resultData?.output?.image_url ??
+            resultData?.output?.images?.[0]?.url ??
+            resultData?.images?.[0]?.url ??
+            resultData?.image_url ??
+            data?.data?.output?.image_url ??
+            null;
+
+          setResult({
+            taskId,
+            status: 'completed',
+            imageUrl: imageUrl ?? undefined,
+            prompt: builtPrompt,
+          });
+          setGenerating(false);
+          return;
+        }
+
+        if (state === 'fail' || state === 'failed') {
+          setError(`Görsel oluşturma başarısız oldu: ${data?.data?.failMsg ?? 'Bilinmeyen hata'}. Lütfen tekrar deneyin.`);
+          setGenerating(false);
+          return;
+        }
+
+        setResult((prev) =>
+          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt },
+        );
+      } catch {
+        // network error, keep polling
+      }
+    }
+
+    setError('İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.');
+    setGenerating(false);
+  }, []);
+
+  const handleGenerate = async () => {
+    if (!selectedClothing) {
+      setError('Lütfen bir kıyafet seçin.');
+      return;
+    }
+
+    setError(null);
+    setResult(null);
+    setGenerating(true);
+
+    const builtPrompt = buildPrompt(
+      selectedClothing.name,
+      selectedAge,
+      selectedSkin,
+      selectedEnv,
+      prompt,
+    );
+
+    // Send the local path — the API route will upload it to Kie.ai
+    const clothingImageUrl = selectedClothing.image;
+
+    try {
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: builtPrompt,
+          image_input: [clothingImageUrl],
+          aspect_ratio: selectedRatio,
+          resolution: selectedResolution,
+          output_format: 'jpg',
+        }),
+      });
+
+      const data = await res.json();
+
+      console.log('[Generate] Response:', JSON.stringify(data, null, 2));
+
+      if (!res.ok || data?.code !== 200) {
+        setError(data?.msg ?? data?.error ?? 'API hatası oluştu.');
+        setGenerating(false);
+        return;
+      }
+
+      const taskId = data?.data?.taskId;
+      if (!taskId) {
+        setError('Task ID alınamadı.');
+        setGenerating(false);
+        return;
+      }
+
+      setResult({ taskId, status: 'pending', prompt: builtPrompt });
+      pollTaskStatus(taskId, builtPrompt);
+    } catch {
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.');
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 sm:space-y-10">
@@ -114,7 +295,7 @@ export default function PhotoStudioPage() {
                   <img
                     src={env.image}
                     alt={env.label}
-                    className={`w-full h-20 object-cover ${selectedEnv === env.id ? 'opacity-80' : ''}`}
+                    className={`w-full h-28 sm:h-32 object-cover ${selectedEnv === env.id ? 'opacity-80' : ''}`}
                   />
                   <div className={`absolute inset-0 flex items-center justify-center ${
                     selectedEnv === env.id ? 'bg-primary/20' : 'bg-black/30'
@@ -258,46 +439,122 @@ export default function PhotoStudioPage() {
             </div>
           </div>
 
-          {/* 4. Large Generate Button */}
-          <button className="w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-primary-dim text-white font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 sm:gap-4 shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all">
-            <Sparkles className="w-5 sm:w-6 h-5 sm:h-6" />
-            FOTOĞRAF OLUŞTUR
+          {/* Error Message */}
+          {error && (
+            <div className="bg-error-container/20 border border-error/30 text-error rounded-xl px-4 py-3 text-sm font-medium">
+              {error}
+            </div>
+          )}
+
+          {/* Generate Button */}
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="w-full py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary to-primary-dim text-white font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 sm:gap-4 shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="w-5 sm:w-6 h-5 sm:h-6 animate-spin" />
+                {result?.status === 'processing' ? 'OLUŞTURULUYOR...' : 'GÖNDERİLİYOR...'}
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 sm:w-6 h-5 sm:h-6" />
+                FOTOĞRAF OLUŞTUR
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* 5. Results Area */}
+      {/* Built Prompt Preview (debug/info) */}
+      {result?.prompt && (
+        <div className="bg-surface-container-low rounded-2xl p-4 sm:p-6 space-y-2">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Oluşturulan Prompt</label>
+          <p className="text-xs text-on-surface-variant/80 leading-relaxed">{result.prompt}</p>
+        </div>
+      )}
+
+      {/* Results Area */}
       <section className="space-y-6">
         <div className="flex items-center gap-3">
           <span className="w-8 h-px bg-outline-variant/30"></span>
           <h2 className="text-xl font-bold tracking-tight text-on-surface">Sonuçlar</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
-          {/* Main Preview */}
-          <div className="relative aspect-[4/5] rounded-2xl sm:rounded-[2rem] overflow-hidden bg-surface-container-low shadow-2xl">
-            <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjbMTpomYlYBPlWxbC65nqSipCFzYXKPbTlTaI9OzNYSTtCvnrBm-RGEpBtSGkdsCegHxELzo3lFbdp9fDgvFq8llYT-jNWLGsRWK_2FrI1biYk44vcAu2DnEx2Yxn_p3EXiMTSlvj-9LnVkYsWFRAVbGN1Ia6Gq8NVxPwJphBLn2W6rzqhK0q8YqOuSSbCyTJzl4zbUvzpWuuUKDNhMyvi0SOhCbXMzt0sFm1jefPYkk12JV5k_JDSmzkWy4sOIPooD4bWJ8c5wI"
-              alt="Result"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-4 sm:bottom-8 inset-x-4 sm:inset-x-8 flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/40 backdrop-blur-xl border border-white/30 shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-primary-container flex items-center justify-center">
-                  <Check className="text-primary w-4 sm:w-5 h-4 sm:h-5" />
+
+        {generating && !result?.imageUrl && (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-on-surface-variant text-sm font-medium">
+              {result?.status === 'processing'
+                ? 'Görsel oluşturuluyor, bu birkaç dakika sürebilir...'
+                : 'İstek gönderiliyor...'}
+            </p>
+          </div>
+        )}
+
+        {result?.imageUrl && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
+            <div className="relative aspect-[4/5] rounded-2xl sm:rounded-[2rem] overflow-hidden bg-surface-container-low shadow-2xl">
+              <img
+                src={result.imageUrl}
+                alt="Generated Result"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-4 sm:bottom-8 inset-x-4 sm:inset-x-8 flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/40 backdrop-blur-xl border border-white/30 shadow-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-primary-container flex items-center justify-center">
+                    <Check className="text-primary w-4 sm:w-5 h-4 sm:h-5" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <button className="bg-primary text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold flex items-center gap-1 sm:gap-2 hover:bg-primary-dim transition-all">
-                  <ImageIcon className="w-4 h-4" />
-                  <span className="hidden sm:inline">Galeriye Ekle</span>
-                </button>
-                <button className="bg-white/50 text-error p-2 rounded-lg sm:rounded-xl hover:bg-error-container/20 transition-all">
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (!result?.imageUrl) return;
+                      const gallery = JSON.parse(localStorage.getItem('kidseria_gallery') || '[]');
+                      gallery.unshift({
+                        id: result.taskId,
+                        url: result.imageUrl,
+                        prompt: result.prompt,
+                        type: 'photo',
+                        createdAt: new Date().toISOString(),
+                      });
+                      localStorage.setItem('kidseria_gallery', JSON.stringify(gallery));
+                      alert('Görsel galeriye eklendi!');
+                    }}
+                    className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold flex items-center gap-1 sm:gap-2 hover:bg-green-700 transition-all"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span className="hidden sm:inline">Galeriye Ekle</span>
+                  </button>
+                  <a
+                    href={result.imageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-primary text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs font-bold flex items-center gap-1 sm:gap-2 hover:bg-primary-dim transition-all"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">Görseli Aç</span>
+                  </a>
+                  <button
+                    onClick={() => setResult(null)}
+                    className="bg-white/50 text-error p-2 rounded-lg sm:rounded-xl hover:bg-error-container/20 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {!generating && !result?.imageUrl && (
+          <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant/50">
+            <ImageIcon className="w-12 h-12 mb-3" />
+            <p className="text-sm">Henüz bir görsel oluşturulmadı.</p>
+            <p className="text-xs mt-1">Seçenekleri belirleyip &quot;Fotoğraf Oluştur&quot; butonuna tıklayın.</p>
+          </div>
+        )}
       </section>
 
       <footer className="w-full py-8 sm:py-12 border-t border-outline-variant/10 mt-12 sm:mt-20">

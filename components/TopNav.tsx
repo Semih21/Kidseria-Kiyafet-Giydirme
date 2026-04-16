@@ -18,11 +18,11 @@ export function TopNav() {
   ];
 
   return (
-    <nav className="sticky top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-outline-variant/10 transition-all duration-300">
+    <nav className="sticky top-0 w-full z-50 bg-white/90 backdrop-blur-sm border-b border-outline-variant/10 transition-all duration-300">
       <div className="flex justify-between items-center px-4 sm:px-8 py-2 sm:py-4 w-full max-w-[1440px] mx-auto">
         <div className="flex items-center gap-4 sm:gap-8">
           <Link href="/" className="flex items-center">
-            <img src="/kidseria-logo-Photoroom.png" alt="Kidseria" className="h-16 sm:h-28 w-auto" />
+            <img src="/kidseria-logo-Photoroom.png" alt="Kidseria" className="h-32 sm:h-32 w-auto object-contain" />
           </Link>
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
