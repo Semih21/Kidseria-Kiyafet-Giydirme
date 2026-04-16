@@ -365,24 +365,20 @@ export default function VideoStudioPage() {
               <Clock className="text-primary w-5 sm:w-6 h-5 sm:h-6" />
               Video Süresi
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Süre</span>
-                <span className="text-sm font-bold text-primary">{duration} Saniye</span>
-              </div>
-              <input
-                type="range"
-                min={5}
-                max={10}
-                step={1}
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full h-2 bg-surface-container-highest rounded-full appearance-none cursor-pointer accent-primary"
-              />
-              <div className="flex justify-between text-[10px] text-on-surface-variant font-medium">
-                <span>5s</span>
-                <span>10s</span>
-              </div>
+            <div className="grid grid-cols-6 gap-2">
+              {[5, 6, 7, 8, 9, 10].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => setDuration(sec)}
+                  className={`py-3 rounded-xl text-sm font-bold transition-all ${
+                    duration === sec
+                      ? 'bg-primary text-on-primary shadow-md shadow-primary/20 scale-105'
+                      : 'bg-surface-container-lowest text-on-surface-variant border-2 border-transparent hover:border-primary/30'
+                  }`}
+                >
+                  {sec}s
+                </button>
+              ))}
             </div>
           </div>
 
