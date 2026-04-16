@@ -69,7 +69,7 @@ export default function GalleryPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kidseria-${item.id}.jpg`;
+      a.download = `kidseria-${item.id}.${item.type === 'video' ? 'mp4' : 'jpg'}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -169,22 +169,35 @@ export default function GalleryPage() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
         {sortedItems.map((item) => (
           <div key={item.id} className="group relative flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-            <div className="aspect-[4/5] relative overflow-hidden cursor-pointer" onClick={() => setLightbox(item)}>
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+            <div className="aspect-[4/5] relative overflow-hidden cursor-pointer bg-black" onClick={() => setLightbox(item)}>
+              {item.type === 'video' ? (
+                <video
+                  src={item.image}
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                  onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                  onMouseOut={(e) => { const v = e.target as HTMLVideoElement; v.pause(); v.currentTime = 0; }}
+                />
+              ) : (
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              )}
               {item.type === 'video' && (
-                <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center">
-                    <Play className="w-8 h-8 text-white fill-current" />
+                <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
+                  <div className="w-14 h-14 rounded-full bg-white/30 backdrop-blur-md flex items-center justify-center">
+                    <Play className="w-7 h-7 text-white fill-current" />
                   </div>
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-lg" />
-              </div>
+              {item.type === 'photo' && (
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-80 transition-opacity drop-shadow-lg" />
+                </div>
+              )}
               <div className="absolute top-2 left-2 bg-surface-container-lowest/70 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1">
                 {item.type === 'photo' ? (
                   <ImageIcon className="w-3 h-3 text-teal-600" />
@@ -253,11 +266,20 @@ export default function GalleryPage() {
             >
               <X className="w-5 h-5" />
             </button>
-            <img
-              src={lightbox.image}
-              alt={lightbox.title}
-              className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
-            />
+            {lightbox.type === 'video' ? (
+              <video
+                src={lightbox.image}
+                controls
+                autoPlay
+                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+              />
+            ) : (
+              <img
+                src={lightbox.image}
+                alt={lightbox.title}
+                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
             <div className="mt-4 flex items-center gap-3">
               <button
                 onClick={() => handleDownload(lightbox)}
