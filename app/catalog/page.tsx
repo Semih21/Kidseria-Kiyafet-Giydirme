@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { PlusCircle, UploadCloud, Grid, List, Trash2, X } from 'lucide-react';
 import { catalogItems, type CatalogItem } from '@/lib/catalog';
 
@@ -8,6 +8,61 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [items, setItems] = useState<CatalogItem[]>(catalogItems);
   const [lightbox, setLightbox] = useState<CatalogItem | null>(null);
+
+  // Form state
+  const [newName, setNewName] = useState('');
+  const [newCode, setNewCode] = useState('');
+  const [newAge, setNewAge] = useState('6-12-18 Ay');
+  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setNewImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newImagePreview) {
+      alert('Lütfen bir fotoğraf seçin.');
+      return;
+    }
+    if (!newName.trim()) {
+      alert('Lütfen ürün adı girin.');
+      return;
+    }
+    if (!newCode.trim()) {
+      alert('Lütfen kıyafet kodu girin.');
+      return;
+    }
+
+    const newItem: CatalogItem = {
+      code: newCode.trim(),
+      name: newName.trim(),
+      image: newImagePreview,
+      ageRange: newAge,
+    };
+
+    setItems((prev) => [newItem, ...prev]);
+
+    // Reset form
+    setNewName('');
+    setNewCode('');
+    setNewAge('6-12-18 Ay');
+    setNewImagePreview(null);
+    setNewImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    alert('Kıyafet kataloğa eklendi!');
+  };
 
   const handleDelete = (code: string) => {
     if (!confirm('Bu kıyafeti silmek istediğinize emin misiniz?')) return;
@@ -36,12 +91,34 @@ export default function CatalogPage() {
             <PlusCircle className="w-6 h-6" />
             Yeni Kıyafet Ekle
           </h2>
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div className="group relative bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 rounded-xl p-8 text-center transition-all hover:border-primary/50 cursor-pointer">
-              <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-              <UploadCloud className="w-10 h-10 text-outline-variant mx-auto mb-3 group-hover:text-primary transition-colors" />
-              <p className="text-sm font-medium text-on-surface-variant">Fotoğrafı buraya sürükleyin veya tıklayın</p>
-              <p className="text-xs text-outline-variant mt-1">PNG, JPG (Max. 10MB)</p>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div
+              className="group relative bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 rounded-xl p-8 text-center transition-all hover:border-primary/50 cursor-pointer overflow-hidden"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {newImagePreview ? (
+                <div className="relative">
+                  <img
+                    src={newImagePreview}
+                    alt="Önizleme"
+                    className="w-full h-40 object-contain rounded-lg"
+                  />
+                  <p className="text-xs text-primary font-medium mt-2">Değiştirmek için tıklayın</p>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud className="w-10 h-10 text-outline-variant mx-auto mb-3 group-hover:text-primary transition-colors" />
+                  <p className="text-sm font-medium text-on-surface-variant">Fotoğrafı buraya tıklayarak seçin</p>
+                  <p className="text-xs text-outline-variant mt-1">PNG, JPG (Max. 10MB)</p>
+                </>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -50,6 +127,8 @@ export default function CatalogPage() {
                 <input
                   type="text"
                   placeholder="Örn: Pamuklu Bebek Takımı"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
                   className="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-xl py-3 px-4 transition-all outline-none"
                 />
               </div>
@@ -58,15 +137,28 @@ export default function CatalogPage() {
                 <input
                   type="text"
                   placeholder="Örn: KD-2024-001"
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value)}
                   className="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant/15 focus:ring-2 focus:ring-primary rounded-xl py-3 px-4 transition-all outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-on-surface-variant mb-1 ml-1">Yaş Aralığı</label>
                 <div className="grid grid-cols-1 gap-2">
-                  {['6-12-18 Ay'].map((age) => (
-                    <label key={age} className="flex items-center gap-2 bg-surface-container-lowest p-3 rounded-xl ring-1 ring-outline-variant/15 cursor-pointer hover:bg-primary-container/20 transition-all">
-                      <input type="radio" name="age" className="text-primary focus:ring-primary" />
+                  {['3-6 Ay', '6-12 Ay', '12-18 Ay', '18+ Ay', '6-12-18 Ay'].map((age) => (
+                    <label key={age} className={`flex items-center gap-2 p-3 rounded-xl ring-1 cursor-pointer transition-all ${
+                      newAge === age
+                        ? 'bg-primary-container/30 ring-primary/30'
+                        : 'bg-surface-container-lowest ring-outline-variant/15 hover:bg-primary-container/20'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="age"
+                        value={age}
+                        checked={newAge === age}
+                        onChange={() => setNewAge(age)}
+                        className="text-primary focus:ring-primary"
+                      />
                       <span className="text-sm">{age}</span>
                     </label>
                   ))}

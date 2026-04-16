@@ -181,8 +181,8 @@ export default function PhotoStudioPage() {
       prompt,
     );
 
-    // Send the local path — the API route will upload it to Kie.ai
-    const clothingImageUrl = selectedClothing.image;
+    // Send the full public URL so the API route can fetch it
+    const clothingImageUrl = `${window.location.origin}${selectedClothing.image}`;
 
     try {
       const res = await fetch('/api/generate-image', {

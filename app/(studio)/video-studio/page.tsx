@@ -164,7 +164,7 @@ export default function VideoStudioPage() {
       prompt,
     );
 
-    const clothingImageUrl = selectedClothing.image;
+    const clothingImageUrl = `${window.location.origin}${selectedClothing.image}`;
 
     try {
       const res = await fetch('/api/generate-video', {
