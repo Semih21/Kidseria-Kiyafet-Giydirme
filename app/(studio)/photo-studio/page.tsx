@@ -72,10 +72,50 @@ function buildPrompt(
   return parts.join(', ') + '.';
 }
 
+const skinMapTr: Record<string, string> = {
+  '#FCE2C4': 'açık',
+  '#E5B087': 'orta',
+  '#AD7A52': 'esmer',
+  '#8D5524': 'koyu',
+};
+
+const envMapTr: Record<string, string> = {
+  studio: 'profesyonel fotoğraf stüdyosu',
+  home: 'sıcak bir çocuk odası',
+  park: 'güneşli yeşil park',
+  beach: 'güneşli tropikal sahil',
+  garden: 'renkli çiçek bahçesi',
+  playground: 'renkli oyun alanı',
+  birthday: 'doğum günü partisi',
+  forest: 'büyülü orman',
+};
+
+function buildPromptTr(
+  clothingName: string,
+  age: string,
+  skin: string,
+  env: string,
+  userPrompt: string,
+): string {
+  const parts = [
+    `${skinMapTr[skin] ?? 'açık'} tenli, ${age.toLowerCase()} bebek/çocuk`,
+    `"${clothingName}" kıyafetini giyiyor`,
+    `ortam: ${envMapTr[env] ?? 'stüdyo'}`,
+    'yüksek kaliteli çocuk moda fotoğrafı, sevimli mutlu poz, doğal aydınlatma',
+  ];
+
+  if (userPrompt.trim()) {
+    parts.push(userPrompt.trim());
+  }
+
+  return parts.join(', ') + '.';
+}
+
 type GenerationResult = {
   taskId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   imageUrl?: string;
+  promptTr?: string;
   prompt: string;
 };
 
@@ -104,7 +144,7 @@ export default function PhotoStudioPage() {
 
   const selectedClothing = catalogItems.find((item) => item.code === selectedItem);
 
-  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string) => {
+  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string, promptTr?: string) => {
     const maxAttempts = 60; // 5 minutes max
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise((r) => setTimeout(r, 5000));
@@ -140,6 +180,7 @@ export default function PhotoStudioPage() {
             status: 'completed',
             imageUrl: imageUrl ?? undefined,
             prompt: builtPrompt,
+            promptTr,
           });
           setGenerating(false);
           return;
@@ -152,7 +193,7 @@ export default function PhotoStudioPage() {
         }
 
         setResult((prev) =>
-          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt },
+          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt, promptTr },
         );
       } catch {
         // network error, keep polling
@@ -174,6 +215,14 @@ export default function PhotoStudioPage() {
     setGenerating(true);
 
     const builtPrompt = buildPrompt(
+      selectedClothing.name,
+      selectedAge,
+      selectedSkin,
+      selectedEnv,
+      prompt,
+    );
+
+    const builtPromptTr = buildPromptTr(
       selectedClothing.name,
       selectedAge,
       selectedSkin,
@@ -214,8 +263,8 @@ export default function PhotoStudioPage() {
         return;
       }
 
-      setResult({ taskId, status: 'pending', prompt: builtPrompt });
-      pollTaskStatus(taskId, builtPrompt);
+      setResult({ taskId, status: 'pending', prompt: builtPrompt, promptTr: builtPromptTr });
+      pollTaskStatus(taskId, builtPrompt, builtPromptTr);
     } catch {
       setError('Bağlantı hatası. Lütfen tekrar deneyin.');
       setGenerating(false);
@@ -471,7 +520,7 @@ export default function PhotoStudioPage() {
       {result?.prompt && (
         <div className="bg-surface-container-low rounded-2xl p-4 sm:p-6 space-y-2">
           <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Oluşturulan Prompt</label>
-          <p className="text-xs text-on-surface-variant/80 leading-relaxed">{result.prompt}</p>
+          <p className="text-xs text-on-surface-variant/80 leading-relaxed">{result.promptTr || result.prompt}</p>
         </div>
       )}
 

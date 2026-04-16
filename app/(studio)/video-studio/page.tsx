@@ -59,11 +59,49 @@ function buildVideoPrompt(
   return parts.join(', ') + '.';
 }
 
+const skinMapTr: Record<string, string> = {
+  '#FCE2C4': 'açık',
+  '#E5B087': 'orta',
+  '#AD7A52': 'esmer',
+  '#8D5524': 'koyu',
+};
+
+const envMapTr: Record<string, string> = {
+  home: 'sıcak bir çocuk odası',
+  playground: 'renkli oyun alanı',
+  beach: 'güneşli tropikal sahil',
+  birthday: 'doğum günü partisi',
+  park: 'güneşli yeşil park',
+  forest: 'büyülü orman',
+};
+
+function buildVideoPromptTr(
+  clothingName: string,
+  age: string,
+  skin: string,
+  env: string,
+  userPrompt: string,
+): string {
+  const parts = [
+    `${skinMapTr[skin] ?? 'açık'} tenli, ${age.toLowerCase()} bebek/çocuk`,
+    `"${clothingName}" kıyafetini giyiyor`,
+    `ortam: ${envMapTr[env] ?? 'ev ortamı'}`,
+    'neşeli ve oyuncu, doğal hareketler, sinematik kalite, doğal aydınlatma',
+  ];
+
+  if (userPrompt.trim()) {
+    parts.push(userPrompt.trim());
+  }
+
+  return parts.join(', ') + '.';
+}
+
 type GenerationResult = {
   taskId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   videoUrl?: string;
   prompt: string;
+  promptTr?: string;
 };
 
 export default function VideoStudioPage() {
@@ -90,7 +128,7 @@ export default function VideoStudioPage() {
 
   const selectedClothing = catalogItems.find((item) => item.code === selectedItem);
 
-  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string) => {
+  const pollTaskStatus = useCallback(async (taskId: string, builtPrompt: string, promptTr?: string) => {
     const maxAttempts = 120; // 10 minutes max (video takes longer)
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise((r) => setTimeout(r, 5000));
@@ -123,6 +161,7 @@ export default function VideoStudioPage() {
             status: 'completed',
             videoUrl: videoUrl ?? undefined,
             prompt: builtPrompt,
+            promptTr,
           });
           setGenerating(false);
           return;
@@ -135,7 +174,7 @@ export default function VideoStudioPage() {
         }
 
         setResult((prev) =>
-          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt },
+          prev ? { ...prev, status: 'processing' } : { taskId, status: 'processing', prompt: builtPrompt, promptTr },
         );
       } catch {
         // network error, keep polling
@@ -157,6 +196,14 @@ export default function VideoStudioPage() {
     setGenerating(true);
 
     const builtPrompt = buildVideoPrompt(
+      selectedClothing.name,
+      selectedAge,
+      selectedSkin,
+      selectedScenario,
+      prompt,
+    );
+
+    const builtPromptTr = buildVideoPromptTr(
       selectedClothing.name,
       selectedAge,
       selectedSkin,
@@ -197,8 +244,8 @@ export default function VideoStudioPage() {
         return;
       }
 
-      setResult({ taskId, status: 'pending', prompt: builtPrompt });
-      pollTaskStatus(taskId, builtPrompt);
+      setResult({ taskId, status: 'pending', prompt: builtPrompt, promptTr: builtPromptTr });
+      pollTaskStatus(taskId, builtPrompt, builtPromptTr);
     } catch {
       setError('Bağlantı hatası. Lütfen tekrar deneyin.');
       setGenerating(false);
