@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary-dim: #095e56;
+  --color-on-primary: #e2fff9;
+  --color-surface-dim: #d1dcd9;
+  --color-on-error: #fff7f6;
+  --color-on-background: #2a3433;
+  --color-secondary-container: #cce8e3;
+  --color-inverse-primary: #b1f9ee;
+  --color-secondary-dim: #3f5854;
+  --color-on-secondary: #e3fff9;
+  --color-tertiary-dim: #27596c;
+  --color-primary-fixed-dim: #9be2d7;
+  --color-surface-container-highest: #d9e5e2;
+  --color-secondary-fixed-dim: #bedad5;
+  --color-on-primary-fixed: #004841;
+  --color-on-error-container: #6e0a12;
+  --color-primary: #1e6a62;
+  --color-tertiary-fixed-dim: #a8d9ef;
+  --color-tertiary-container: #b6e7fe;
+  --color-surface-container: #e7f0ed;
+  --color-on-tertiary-fixed-variant: #2e6073;
+  --color-on-primary-container: #065c54;
+  --color-surface: #f6faf8;
+  --color-inverse-surface: #0a0f0e;
+  --color-on-surface: #2a3433;
+  --color-on-secondary-container: #3d5653;
+  --color-secondary-fixed: #cce8e3;
+  --color-on-secondary-fixed-variant: #47605c;
+  --color-surface-tint: #1e6a62;
+  --color-background: #f6faf8;
+  --color-primary-container: #a9f0e5;
+  --color-inverse-on-surface: #999e9c;
+  --color-error-container: #fa746f;
+  --color-on-tertiary: #f2faff;
+  --color-on-secondary-fixed: #2b4440;
+  --color-error: #a83836;
+  --color-surface-bright: #f6faf8;
+  --color-error-dim: #67040d;
+  --color-primary-fixed: #a9f0e5;
+  --color-on-tertiary-fixed: #084355;
+  --color-on-primary-fixed-variant: #19665e;
+  --color-secondary: #4b6460;
+  --color-outline-variant: #a9b4b1;
+  --color-tertiary-fixed: #b6e7fe;
+  --color-tertiary: #346578;
+  --color-outline: #727d7b;
+  --color-on-tertiary-container: #235669;
+  --color-surface-variant: #d9e5e2;
+  --color-surface-container-high: #e1eae7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eef5f3;
+  --color-on-surface-variant: #56615f;
+
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-body;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+}
