@@ -584,7 +584,7 @@ export default function PhotoStudioPage() {
                   gallery.unshift({
                     id: result.taskId,
                     url: result.imageUrl,
-                    prompt: result.promptTr || result.prompt,
+                    prompt: selectedClothing ? `Kidseria ${selectedClothing.code} - ${selectedClothing.name}` : 'AI Görsel',
                     type: 'photo',
                     createdAt: new Date().toISOString(),
                   });

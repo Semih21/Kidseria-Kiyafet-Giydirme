@@ -536,7 +536,7 @@ export default function VideoStudioPage() {
                         gallery.unshift({
                           id: result.taskId,
                           url: result.videoUrl,
-                          prompt: result.promptTr || result.prompt,
+                          prompt: selectedClothing ? `Kidseria ${selectedClothing.code} - ${selectedClothing.name}` : 'AI Video',
                           type: 'video',
                           createdAt: new Date().toISOString(),
                         });
