@@ -8,6 +8,7 @@ type GalleryItem = {
   title: string;
   type: 'photo' | 'video';
   image: string;
+  createdAt?: string;
 };
 
 const allItems: GalleryItem[] = [];
@@ -31,6 +32,7 @@ export default function GalleryPage() {
           title: g.prompt?.slice(0, 40) + '...' || 'AI Görsel',
           type: (g.type || 'photo') as 'photo' | 'video',
           image: g.url,
+          createdAt: g.createdAt || new Date().toISOString(),
         }));
         setItems(generated);
       }
@@ -46,8 +48,10 @@ export default function GalleryPage() {
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortBy === 'name') return a.title.localeCompare(b.title, 'tr');
-    if (sortBy === 'oldest') return a.id.localeCompare(b.id);
-    return b.id.localeCompare(a.id); // newest
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    if (sortBy === 'oldest') return dateA - dateB;
+    return dateB - dateA; // newest
   });
 
   const sortLabels: Record<SortOption, string> = {
@@ -194,6 +198,11 @@ export default function GalleryPage() {
             </div>
             <div className="p-3 sm:p-6">
               <h3 className="text-sm sm:text-lg font-bold text-on-surface mb-1 sm:mb-2 truncate">{item.title}</h3>
+              {item.createdAt && (
+                <p className="text-[10px] sm:text-xs text-on-surface-variant/60">
+                  {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              )}
               <div className="flex items-center justify-between mt-2 sm:mt-4 border-t border-outline-variant/10 pt-2 sm:pt-4">
                 <div className="flex gap-1 sm:gap-2">
                   <button
