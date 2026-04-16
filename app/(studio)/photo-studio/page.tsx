@@ -501,6 +501,28 @@ export default function PhotoStudioPage() {
                 alt="Generated Result"
                 className="w-full h-full object-cover"
               />
+              {/* Logo - sağ üst */}
+              <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+                <img
+                  src="/kidseria-logo-Photoroom.png"
+                  alt="Kidseria"
+                  className="h-12 sm:h-16 w-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                />
+              </div>
+              {/* Kıyafet kodu ve yaş - sağ alt */}
+              {selectedClothing && (
+                <div className="absolute bottom-6 right-4 sm:bottom-10 sm:right-6 text-right">
+                  <p className="text-white font-extrabold text-3xl sm:text-4xl tracking-wide drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]" style={{ fontFamily: 'var(--font-headline, Manrope, sans-serif)' }}>
+                    {selectedClothing.code}
+                  </p>
+                  <p className="text-white/90 text-xs sm:text-sm font-semibold tracking-wider drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+                    {selectedAge.replace(' Ay', '')}
+                  </p>
+                  <p className="text-white/80 text-[10px] sm:text-xs font-medium tracking-widest drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
+                    Ay/Month
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-3 flex-wrap justify-center">
               <div className="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center">
