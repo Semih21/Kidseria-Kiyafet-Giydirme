@@ -372,16 +372,16 @@ export default function VideoStudioPage() {
               </div>
               <input
                 type="range"
-                min={5}
-                max={10}
-                step={5}
+                min={3}
+                max={15}
+                step={1}
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
                 className="w-full h-2 bg-surface-container-highest rounded-full appearance-none cursor-pointer accent-primary"
               />
               <div className="flex justify-between text-[10px] text-on-surface-variant font-medium">
-                <span>5s</span>
-                <span>10s</span>
+                <span>3s</span>
+                <span>15s</span>
               </div>
             </div>
           </div>
