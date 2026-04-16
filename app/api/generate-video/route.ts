@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kieFetch, kieUploadBase64 } from '@/lib/kie';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 
 type KlingElement = {
   name: string;
@@ -28,9 +26,12 @@ type GenerateVideoBody = {
 };
 
 async function uploadLocalImage(localPath: string): Promise<string | null> {
-  const filePath = join(process.cwd(), 'public', localPath);
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const fullUrl = `${appUrl}${localPath}`;
   try {
-    const buffer = await readFile(filePath);
+    const res = await fetch(fullUrl);
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
     const ext = localPath.split('.').pop()?.toLowerCase() ?? 'jpg';
     const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
     const base64 = `data:${mime};base64,${buffer.toString('base64')}`;

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kieFetch, kieUploadBase64 } from '@/lib/kie';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 
 type GenerateImageBody = {
   prompt: string;
@@ -13,14 +11,16 @@ type GenerateImageBody = {
 };
 
 /**
- * Reads a local catalog image, uploads it to Kie.ai file storage,
- * and returns the public URL. Returns null on failure.
+ * Fetches a local/public image via HTTP, converts to base64,
+ * uploads to Kie.ai file storage, and returns the public URL.
  */
 async function uploadLocalImage(localPath: string): Promise<string | null> {
-  // localPath is like "/catalog/17000.jpg"
-  const filePath = join(process.cwd(), 'public', localPath);
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const fullUrl = `${appUrl}${localPath}`;
   try {
-    const buffer = await readFile(filePath);
+    const res = await fetch(fullUrl);
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
     const ext = localPath.split('.').pop()?.toLowerCase() ?? 'jpg';
     const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
     const base64 = `data:${mime};base64,${buffer.toString('base64')}`;
@@ -47,14 +47,12 @@ export async function POST(req: NextRequest) {
   const uploadedUrls: string[] = [];
   if (body.image_input && body.image_input.length > 0) {
     for (const url of body.image_input) {
-      // Check if it's a local path (starts with / and not http)
       if (url.startsWith('/')) {
         const uploadedUrl = await uploadLocalImage(url);
         if (uploadedUrl) {
           uploadedUrls.push(uploadedUrl);
         }
       } else if (url.includes('localhost') || url.includes('127.0.0.1')) {
-        // Extract the path from localhost URL
         try {
           const parsed = new URL(url);
           const uploadedUrl = await uploadLocalImage(parsed.pathname);
@@ -65,7 +63,6 @@ export async function POST(req: NextRequest) {
           // skip invalid URLs
         }
       } else {
-        // Already a public URL, use as-is
         uploadedUrls.push(url);
       }
     }
